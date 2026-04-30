@@ -329,10 +329,11 @@
             accountInput.value = normalized;
             passwordInput.value = "qr_login_secure";
             localStorage.setItem("qrLoginUser", normalized);
+            localStorage.setItem("mbCurrentUser", normalized);
             syncButtonsEnabled();
 
             stopAll();
-            setTimeout(() => window.location.href = 'inBody.html', 1000);
+            setTimeout(() => window.location.href = 'saveLoad.html', 1000);
           } else {
             // 驗證失敗
             faceStatus.textContent = "無效的 QR Code，請使用專屬識別證";
@@ -425,7 +426,13 @@
 
     accountInput.addEventListener('input', syncButtonsEnabled);
     passwordInput.addEventListener('input', syncButtonsEnabled);
-    loginBtn.addEventListener('click', () => window.location.href = 'inBody.html');
+    loginBtn.addEventListener('click', () => {
+      const account = accountInput.value.trim();
+      if (account) {
+        localStorage.setItem("mbCurrentUser", account);
+      }
+      window.location.href = 'saveLoad.html';
+    });
 
     switchCameraBtn.addEventListener('click', async () => {
       if (!isQRMode) return;
