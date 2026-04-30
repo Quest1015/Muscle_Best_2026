@@ -278,8 +278,8 @@
 
         if (found) {
           const normalized = (text || "").trim();
-          const expected = SECRET_KEY.trim();
-          if (normalized === expected) {
+          const expectedKeys = Array.isArray(SECRET_KEY) ? SECRET_KEY.map(k => (k || "").trim()) : [(SECRET_KEY || "").trim()];
+          if (expectedKeys.includes(normalized)) {
             // 驗證成功
             faceStatus.textContent = "驗證成功！正在登入...";
             faceStatus.style.color = "#28a745";
@@ -296,7 +296,7 @@
             // 驗證失敗
             faceStatus.textContent = "無效的 QR Code，請使用專屬識別證";
             faceStatus.style.color = "#d9534f";
-            setDebug(`掃到內容：${normalized || "(空字串)"}\n預期內容：${expected}`);
+            setDebug(`掃到內容：${normalized || "(空字串)"}\n預期內容：${expectedKeys.join(" / ")}`);
             setTimeout(() => { 
               faceStatus.style.color = "#974511";
               faceStatus.textContent = "請將 QR code 放入畫面中央";
