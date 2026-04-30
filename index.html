@@ -61,7 +61,8 @@
     #face-video {
       width: 100%;
       height: 100%;
-      object-fit: fill; /* 正方形顯示，避免掃描框被裁切只剩一半 */
+      object-fit: cover; /* 保持比例，避免手機畫面變形 */
+      object-position: center;
     }
     #qr-overlay {
       position: absolute;
@@ -175,7 +176,7 @@
     const switchCameraBtn = document.getElementById('switch-camera-btn');
 
     // --- 設定與狀態 ---
-    const SECRET_KEY = "MuscleBest_User_CWX"; // 只有內容是這個字串的 QR Code 才能登入
+    const SECRET_KEY = ["MuscleBest_User_CWX", "MuscleBest_User_MHW", "MuscleBest_User_TPZ"]; // 只有內容是這個字串的 QR Code 才能登入
     let isQRMode = false;
     let activeStream = null;
     let qrTimer = null;
