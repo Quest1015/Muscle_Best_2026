@@ -195,6 +195,23 @@
     function appendDebug(msg) { faceDebug.textContent += `\n${msg}`; }
     function clearOverlay() { qrCtx.clearRect(0, 0, qrOverlay.width, qrOverlay.height); }
 
+    function drawGuideFrame() {
+      clearOverlay();
+      const w = qrOverlay.width;
+      const h = qrOverlay.height;
+      if (!w || !h) return;
+
+      const size = Math.floor(Math.min(w, h) * 0.62);
+      const x = Math.floor((w - size) / 2);
+      const y = Math.floor((h - size) / 2);
+
+      qrCtx.strokeStyle = "rgba(0, 229, 255, 0.85)";
+      qrCtx.lineWidth = 3;
+      qrCtx.setLineDash([12, 8]);
+      qrCtx.strokeRect(x, y, size, size);
+      qrCtx.setLineDash([]);
+    }
+
     function resizeQrOverlay() {
       const rect = qrOverlay.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
@@ -234,13 +251,33 @@
     }
 
     // 畫出掃描框
+    function mapVideoPointToOverlay(p) {
+      const vw = video.videoWidth || 1;
+      const vh = video.videoHeight || 1;
+      const ow = qrOverlay.width || 1;
+      const oh = qrOverlay.height || 1;
+
+      // 與 object-fit: cover 一致的縮放與裁切
+      const scale = Math.max(ow / vw, oh / vh);
+      const renderedW = vw * scale;
+      const renderedH = vh * scale;
+      const offsetX = (renderedW - ow) / 2;
+      const offsetY = (renderedH - oh) / 2;
+
+      return {
+        x: p.x * scale - offsetX,
+        y: p.y * scale - offsetY
+      };
+    }
+
     function drawBox(points) {
-      clearOverlay();
+      drawGuideFrame();
+      const mapped = points.map(mapVideoPointToOverlay);
       qrCtx.strokeStyle = "#00e5ff";
       qrCtx.lineWidth = 4;
       qrCtx.beginPath();
-      qrCtx.moveTo(points[0].x, points[0].y);
-      points.forEach(p => qrCtx.lineTo(p.x, p.y));
+      qrCtx.moveTo(mapped[0].x, mapped[0].y);
+      mapped.forEach(p => qrCtx.lineTo(p.x, p.y));
       qrCtx.closePath();
       qrCtx.stroke();
     }
@@ -274,6 +311,10 @@
             drawBox([code.topLeftCorner, code.topRightCorner, code.bottomRightCorner, code.bottomLeftCorner]);
             found = true;
           }
+        }
+
+        if (!found) {
+          drawGuideFrame();
         }
 
         if (found) {
@@ -341,6 +382,7 @@
           resizeQrOverlay();
           await video.play();
           qrRunning = true;
+          drawGuideFrame();
           qrTimer = setInterval(scanQRCodeOnce, 300);
           faceStatus.textContent = "請將 QR code 放入畫面中央";
           setDebug(`鏡頭啟動成功（${cameraFacing === "environment" ? "後鏡頭優先" : "前鏡頭備援"}）`);
